@@ -86,6 +86,9 @@ func main() {
 			selected[p] = true
 		}
 	}
+	if selected["turn"] {
+		selected["wal"] = true
+	}
 
 	if err := os.MkdirAll(name, 0755); err != nil {
 		e.Die(e.Wrap("iele", e.Trans, "mkdir", err))

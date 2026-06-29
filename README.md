@@ -24,10 +24,10 @@ These are always included:
 
 These can be added when wanted:
 - cfg: configuration file parsing and binding
-- proc: running external processes and capturing output
+- proc: running external processes, capturing output, and detached background launch
 - sec: secure token loading with permission checks
 - tmp: temporary file and directory handling with signal watching
-- turn: message recording and projection using the write-ahead log
+- turn: message recording and projection using the write-ahead log (pulls in wal)
 - wal: append-only write-ahead logging
 - web: HTTP client with multipart support
 
