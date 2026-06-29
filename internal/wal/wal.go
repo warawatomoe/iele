@@ -112,7 +112,10 @@ func OpenOrCreate(path string, magic Magic) (*WAL, error) {
 
 // Close closes the underlying file.
 func (w *WAL) Close() error {
-	return w.f.Close()
+	if err := w.f.Close(); err != nil {
+		return e.Wrap("", e.Trans, "wal:close", err)
+	}
+	return nil
 }
 
 // Write appends a record to the WAL.

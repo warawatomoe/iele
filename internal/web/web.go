@@ -246,7 +246,11 @@ func writeMultipart(mw *multipart.Writer, fields []Field, files []File) error {
 
 func createFilePart(mw *multipart.Writer, field, name, mime string) (io.Writer, error) {
 	if mime == "" {
-		return mw.CreateFormFile(field, name)
+		w, err := mw.CreateFormFile(field, name)
+		if err != nil {
+			return nil, e.Wrap("", e.Trans, "web:multipart", err)
+		}
+		return w, nil
 	}
 	h := make(textproto.MIMEHeader)
 	h.Set("Content-Disposition",

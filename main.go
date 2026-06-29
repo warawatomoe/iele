@@ -4,6 +4,7 @@ import (
 	"embed"
 	"flag"
 	"fmt"
+	"io"
 	"io/fs"
 	"os"
 	"path"
@@ -29,23 +30,37 @@ var licNames = map[string]string{
 	"mit": "MIT", "bsd-2": "BSD-2", "apache-2": "APACHE-2",
 }
 
-func main() {
-	name := flag.String("n", "", "")
-	author := flag.String("a", "", "")
-	license := flag.String("l", "mit", "")
-	pkgs := flag.String("p", "", "")
+var version = "dev"
 
-	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "usage: iele -n name -a author [-l license] [-p packages]\n")
+func main() {
+	fs := flag.NewFlagSet(os.Args[0], flag.ContinueOnError)
+	fs.SetOutput(io.Discard)
+	versionFlag := fs.Bool("v", false, "print version")
+	name := fs.String("n", "", "")
+	author := fs.String("a", "", "")
+	license := fs.String("l", "mit", "")
+	pkgs := fs.String("p", "", "")
+
+	fs.Usage = func() {
+		fmt.Fprintf(os.Stderr, "usage: iele -n name -a author [-l license] [-p packages] [-v]\n")
 		fmt.Fprintf(os.Stderr, "  -n  project name\n")
 		fmt.Fprintf(os.Stderr, "  -a  author\n")
 		fmt.Fprintf(os.Stderr, "  -l  license: mit, bsd-2, apache-2 (default: mit)\n")
 		fmt.Fprintf(os.Stderr, "  -p  optional packages: cfg,proc,sec,tmp,turn,wal,web\n")
+		fmt.Fprintf(os.Stderr, "  -v  print version\n")
 	}
-	flag.Parse()
+
+	if err := fs.Parse(os.Args[1:]); err != nil {
+		e.Die(e.New("iele", e.Call, "main", err.Error()))
+	}
+
+	if *versionFlag {
+		fmt.Printf("iele %s\n", version)
+		os.Exit(0)
+	}
 
 	if *name == "" || *author == "" {
-		flag.Usage()
+		fs.Usage()
 		e.Die(e.New("iele", e.Call, "main", "name_and_author_required"))
 	}
 
