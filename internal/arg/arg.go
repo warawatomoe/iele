@@ -108,7 +108,7 @@ func Help(out *os.File, name, usage string, opts []Opt) {
 		if met == "" {
 			met = "val"
 		}
-		fmt.Fprintf(out, "  -%c %-6s %s\n", opt.Key, met, opt.Doc)
+		fmt.Fprintf(out, "  -%c %-8s %s\n", opt.Key, met, opt.Doc)
 	}
 }
 

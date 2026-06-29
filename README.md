@@ -34,11 +34,13 @@ These can be added when wanted:
 ## To use
 
 ```sh
-./iele -n project-name -a "Your Name" [-l mit] [-p cfg,web,...]
+./iele -n project-name -a "Your Name" [-l mit] [-p cfg,web,...] [-h] [-v]
 ```
 
 It creates a new directory with the chosen pieces copied in (imports adjusted),
 a license, go.mod, and the example main.go.
+
+`-h` shows help, `-v` prints the version.
 
 The stamped result uses the internal packages directly. It is a starting point,
 not a complete application.

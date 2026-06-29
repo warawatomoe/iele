@@ -2,9 +2,7 @@ package main
 
 import (
 	"embed"
-	"flag"
 	"fmt"
-	"io"
 	"io/fs"
 	"os"
 	"path"
@@ -13,6 +11,7 @@ import (
 	"text/template"
 	"time"
 
+	"iele/internal/arg"
 	e "iele/internal/err"
 )
 
@@ -33,38 +32,43 @@ var licNames = map[string]string{
 var version = "dev"
 
 func main() {
-	fs := flag.NewFlagSet(os.Args[0], flag.ContinueOnError)
-	fs.SetOutput(io.Discard)
-	versionFlag := fs.Bool("v", false, "print version")
-	name := fs.String("n", "", "")
-	author := fs.String("a", "", "")
-	license := fs.String("l", "mit", "")
-	pkgs := fs.String("p", "", "")
+	var (
+		showHelp    bool
+		showVersion bool
+		name        string
+		author      string
+		license     string = "mit"
+		pkgs        string
+	)
 
-	fs.Usage = func() {
-		fmt.Fprintf(os.Stderr, "usage: iele -n name -a author [-l license] [-p packages] [-v]\n")
-		fmt.Fprintf(os.Stderr, "  -n  project name\n")
-		fmt.Fprintf(os.Stderr, "  -a  author\n")
-		fmt.Fprintf(os.Stderr, "  -l  license: mit, bsd-2, apache-2 (default: mit)\n")
-		fmt.Fprintf(os.Stderr, "  -p  optional packages: cfg,proc,sec,tmp,turn,wal,web\n")
-		fmt.Fprintf(os.Stderr, "  -v  print version\n")
+	opts := []arg.Opt{
+		{Key: 'h', Typ: arg.TFlg, Dst: &showHelp, Doc: "show help"},
+		{Key: 'v', Typ: arg.TFlg, Dst: &showVersion, Doc: "print version"},
+		{Key: 'n', Typ: arg.TStr, Dst: &name, Met: "name", Doc: "project name", Flg: arg.Req},
+		{Key: 'a', Typ: arg.TStr, Dst: &author, Met: "author", Doc: "name of the author", Flg: arg.Req},
+		{Key: 'l', Typ: arg.TStr, Dst: &license, Met: "license", Doc: "mit, bsd-2, apache-2 (default: mit)"},
+		{Key: 'p', Typ: arg.TStr, Dst: &pkgs, Met: "packages", Doc: "comma-separated optional packages"},
 	}
 
-	if err := fs.Parse(os.Args[1:]); err != nil {
-		e.Die(e.New("iele", e.Call, "main", err.Error()))
+	usage := arg.Usage(opts, nil)
+	arg.Parse("iele", usage, opts)
+
+	if showHelp {
+		arg.Help(os.Stdout, "iele", usage, opts)
+		os.Exit(0)
 	}
 
-	if *versionFlag {
+	if showVersion {
 		fmt.Printf("iele %s\n", version)
 		os.Exit(0)
 	}
 
-	if *name == "" || *author == "" {
-		fs.Usage()
+	if name == "" || author == "" {
+		arg.Help(os.Stderr, "iele", usage, opts)
 		e.Die(e.New("iele", e.Call, "main", "name_and_author_required"))
 	}
 
-	licFile, ok := licNames[*license]
+	licFile, ok := licNames[license]
 	if !ok {
 		e.Die(e.New("iele", e.Call, "main", "invalid_license"))
 	}
@@ -73,8 +77,8 @@ func main() {
 	for _, m := range mandatory {
 		selected[m] = true
 	}
-	if *pkgs != "" {
-		for _, p := range strings.Split(*pkgs, ",") {
+	if pkgs != "" {
+		for _, p := range strings.Split(pkgs, ",") {
 			p = strings.TrimSpace(p)
 			if !optional[p] {
 				e.Die(e.New("iele", e.Call, "main", "unknown_pkg_"+p))
@@ -83,23 +87,23 @@ func main() {
 		}
 	}
 
-	if err := os.MkdirAll(*name, 0755); err != nil {
+	if err := os.MkdirAll(name, 0755); err != nil {
 		e.Die(e.Wrap("iele", e.Trans, "mkdir", err))
 	}
 
 	for pkg := range selected {
-		copyPkg(*name, pkg)
+		copyPkg(name, pkg)
 	}
 
-	stampLicense(*name, licFile, *author)
-	stampMain(*name, *author)
+	stampLicense(name, licFile, author)
+	stampMain(name, author)
 
-	gomod := fmt.Sprintf("module %s\n\ngo 1.22\n", *name)
-	if err := os.WriteFile(filepath.Join(*name, "go.mod"), []byte(gomod), 0644); err != nil {
+	gomod := fmt.Sprintf("module %s\n\ngo 1.22\n", name)
+	if err := os.WriteFile(filepath.Join(name, "go.mod"), []byte(gomod), 0644); err != nil {
 		e.Die(e.Wrap("iele", e.Trans, "gomod", err))
 	}
 
-	fmt.Printf("stamped %s\n", *name)
+	fmt.Printf("stamped %s\n", name)
 }
 
 func copyPkg(name, pkg string) {
