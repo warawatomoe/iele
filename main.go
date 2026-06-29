@@ -29,7 +29,7 @@ var licNames = map[string]string{
 	"mit": "MIT", "bsd-2": "BSD-2", "apache-2": "APACHE-2",
 }
 
-var version = "dev"
+var version = "0.0.5"
 
 func main() {
 	var (
