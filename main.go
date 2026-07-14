@@ -23,7 +23,7 @@ var templateFS embed.FS
 
 var mandatory = []string{"arg", "err", "pipe"}
 var optional = map[string]bool{
-	"cfg": true, "proc": true, "sec": true, "tmp": true, "turn": true, "wal": true, "web": true,
+	"cfg": true, "jsn": true, "proc": true, "sec": true, "tmp": true, "turn": true, "wal": true, "web": true,
 }
 var licNames = map[string]string{
 	"mit": "MIT", "bsd-2": "BSD-2", "apache-2": "APACHE-2",
